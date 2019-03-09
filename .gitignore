@@ -1,0 +1,6 @@
+
+files/
+.idea/
+*.pyc
+*.xml
+mycode/
