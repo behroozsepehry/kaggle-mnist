@@ -5,7 +5,7 @@
 
   "Model":
     {
-      "name": "conv_28",
+      "name": "mnist_cnn",
       "in_channels": 1,
       "mid_channels": 20,
       "out_channels": 10,

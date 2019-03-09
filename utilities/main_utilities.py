@@ -35,17 +35,17 @@ def get_optimizer(parameters, **kwargs):
 def get_dataloaders(**kwargs):
     path = kwargs.get('path')
     train = pd.read_csv(path+'train.csv')
-    x_test = pd.read_csv(path+'test.csv')
 
-    y_train = train["label"]
-    x_train = train.drop(labels=["label"], axis=1)
+    y_train = train["label"].values
+    x_train = train.drop(labels=["label"], axis=1).values
+    x_test = pd.read_csv(path+'test.csv').values
+
     del train
 
-    x_train /= 255.
+    x_train = x_train / 255.
     x_test = x_test / 255.
-
-    x_train = x_train.values.reshape(-1, 1, 28, 28)
-    x_test = x_test.values.reshape(-1, 1, 28, 28)
+    x_train = x_train.reshape(-1, 1, 28, 28)
+    x_test = x_test.reshape(-1, 1, 28, 28)
 
     x_train, x_val, y_train, y_val = model_selection.train_test_split(x_train, y_train, test_size=kwargs['ratio']['val'])
 

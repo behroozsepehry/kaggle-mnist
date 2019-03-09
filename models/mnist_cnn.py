@@ -7,3 +7,5 @@ class Model(base.ModelBase):
         super(Model, self).__init__(*args, **kwargs)
         self.cnn = conv_28.Model(*args, **kwargs)
 
+    def forward(self, *input):
+        return self.cnn(*input)
