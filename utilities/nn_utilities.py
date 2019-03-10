@@ -3,13 +3,13 @@ from torch import nn
 
 
 def apply_func_to_model_data(model, func, dataloader, device):
-    result = 0.
+    result = []
     with torch.no_grad():
-        for batch_idx, (x, _) in enumerate(dataloader):
+        for i_batch, data_tuple in enumerate(dataloader):
+            x = data_tuple[0]
             x = x.to(device)
             model_out = model(x)
-            result += func(**model_out)
-    result /= len(dataloader.sampler)
+            result.append(func(model_out))
     return result
 
 

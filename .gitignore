@@ -4,3 +4,4 @@ files/
 *.pyc
 *.xml
 mycode/
+.DS_Store

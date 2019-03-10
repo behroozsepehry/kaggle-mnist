@@ -2,6 +2,7 @@
   # The higher level names must be same as the class name!
   "seed": 0,
   "function": "train",
+  "submission_path": "files/results/mnist_submission.csv",
 
   "Model":
     {
@@ -28,7 +29,6 @@
         "evaluate_args":
           {
               "verbose": True,
-              "path": "files/results/MNIST/1",
           },
     },
 
@@ -63,7 +63,7 @@
         },
     },
 
-  "Losse":
+  "Loss":
     {
       "name": "CrossEntropyLoss",
     },

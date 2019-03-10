@@ -4,11 +4,13 @@ import itertools
 import copy
 import numpy as np
 from scipy import stats
+import pandas as pd
 
 import torch
 
 from utilities import main_utilities as m_util
 from utilities import general_utilities as g_util
+from utilities import nn_utilities as n_util
 
 
 def construct_objects(settings):
@@ -21,7 +23,7 @@ def construct_objects(settings):
     model.load(map_location=device)
     model = model.to(device)
     dataloaders = m_util.get_dataloaders(**settings['Dataloaders'])
-    optimizer = m_util.get_optimizer(model.parameters(), **settings['Optimizers'])
+    optimizer = m_util.get_optimizer(model.parameters(), **settings['Optimizer'])
     loss_func = m_util.get_loss(**settings['Loss'])
     logger = m_util.get_logger(**settings['Logger'])
 
@@ -31,13 +33,26 @@ def construct_objects(settings):
     return device, model, dataloaders, optimizer, loss_func, logger
 
 
+def create_submission(model, dataloader, device, settings):
+    print('create_submission')
+    result_list = n_util.apply_func_to_model_data(model, lambda x: x, dataloader, device)
+    result = np.vstack([x.cpu().numpy() for x in result_list])
+    result = np.argmax(result, axis=1)
+
+    submission_path = settings.get('submission_path')
+    if submission_path:
+        result_pd = pd.Series(result, name="Label")
+        submission = pd.concat([pd.Series(range(1, 28001), name="ImageId"), result_pd], axis=1)
+        submission.to_csv(submission_path, index=False)
+
+    return result
+
+
 def train_seed(settings):
     objects = construct_objects(settings)
-    device, model, dataloaders, optimizers, losses, logger, evaluator = objects
-    result = model.train_model(device, dataloaders, optimizers, losses, logger)
-    if evaluator:
-        eval = evaluator()
-        print('%s\nEvaluated: %s\n%s' % ('#'*10, eval, '#'*10))
+    device, model, dataloaders, optimizer, loss_func, logger = objects
+    result = model.train_model(device, dataloaders, optimizer, loss_func, logger)
+    create_submission(model, dataloaders['test'], device, settings)
     if logger:
         logger.close()
     return result
@@ -98,7 +113,7 @@ def main():
     if settings['function'] == 'train':
         result = train(settings)
     elif settings['function'] == 'hypertune':
-        result = train(settings)
+        result = hypertune(settings)
     else:
         raise NotImplementedError
     print('result: %s' % (result))

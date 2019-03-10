@@ -4,6 +4,7 @@ from sklearn import model_selection
 
 import torch
 from torch import optim
+from torch import nn
 from torchvision import datasets, transforms
 from torch.utils.data.sampler import SubsetRandomSampler
 
@@ -61,15 +62,15 @@ def get_dataloaders(**kwargs):
         'test':
             torch.utils.data.DataLoader(
                 torch.utils.data.TensorDataset(torch.Tensor(x_test)),
-                **dict(**kwargs['args'], shuffle=False))
+                **dict(kwargs['args'], shuffle=False))
     }
     return dataloaders
 
 
 def get_loss(**kwargs):
     loss_name = kwargs['name']
-    loss_constructor = getattr(optim, loss_name)
-    loss_func = loss_constructor(**kwargs['args'])
+    loss_constructor = getattr(nn, loss_name)
+    loss_func = loss_constructor(**kwargs.get('args', {}))
     return loss_func
 
 
