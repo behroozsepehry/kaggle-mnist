@@ -66,7 +66,7 @@ class ModelBase(nn.Module):
 
         return dict(loss=loss_epoch)
 
-    def train_model(self, device, dataloaders, optimizer, loss_func, logger, **kwargs):
+    def train_model(self, device, dataloaders, optimizer, lr_scheduler, loss_func, logger, **kwargs):
         t0 = time.time()
         n_epochs = kwargs.get('n_epochs', self.train_args.get('n_epochs'))
 
@@ -78,6 +78,7 @@ class ModelBase(nn.Module):
             train_loss = self.train_epoch(epoch, optimizer, dataloaders['train'], loss_func, device, logger)['loss']
             val_loss = self.evaluate_epoch(epoch, dataloaders.get('val'), loss_func, device, logger, name='val')['loss']
 
+            lr_scheduler.step(val_loss)
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 validated_train_loss = train_loss

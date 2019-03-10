@@ -33,6 +33,13 @@ def get_optimizer(parameters, **kwargs):
     return optimizer
 
 
+def get_lr_scheduler(optimizer, **kwargs):
+    scheduler_name = kwargs['name']
+    scheduler_constructor = getattr(optim.lr_scheduler, scheduler_name)
+    scheduler = scheduler_constructor(optimizer, **kwargs['args'])
+    return scheduler
+
+
 def get_dataloaders(**kwargs):
     path = kwargs.get('path')
 

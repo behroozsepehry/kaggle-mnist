@@ -8,7 +8,7 @@
     {
       "name": "mnist_cnn",
       "in_channels": 1,
-      "mid_channels": 20,
+      "mid_channels": 40,
       "out_channels": 10,
       "activation":
         {
@@ -22,9 +22,9 @@
 #        "load_path": "files/results/MNIST/1/model_1.p",
         "train_args":
           {
-              "n_epochs": 10,
+              "n_epochs": 1000,
               "verbose": True,
-              "log_interval": 20,
+              "log_interval": 120,
           },
         "evaluate_args":
           {
@@ -43,6 +43,15 @@
         "args":
           {
               "lr": 1.0e-3,
+          },
+    },
+
+  "LR_Scheduler":
+    {
+        "name": "ReduceLROnPlateau",
+        "args":
+          {
+              "verbose": True,
           },
     },
 
@@ -68,10 +77,10 @@
                         "name": "ColorJitter",
                         "args":
                           {
-                              "brightness": 0.1,
-                              "contrast": 0.1,
-                              "saturation": 0.1,
-                              "hue": 0.1,
+                              "brightness": 0.2,
+                              "contrast": 0.2,
+                              "saturation": 0.2,
+                              "hue": 0.2,
                           },
                     },
 

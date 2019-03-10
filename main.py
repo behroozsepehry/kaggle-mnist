@@ -24,13 +24,14 @@ def construct_objects(settings):
     model = model.to(device)
     dataloaders = m_util.get_dataloaders(**settings['Dataloaders'])
     optimizer = m_util.get_optimizer(model.parameters(), **settings['Optimizer'])
+    lr_scheduler = m_util.get_lr_scheduler(optimizer, **settings['LR_Scheduler'])
     loss_func = m_util.get_loss(**settings['Loss'])
     logger = m_util.get_logger(**settings['Logger'])
 
     if logger and logger.flags.get('conf'):
         logger.add_text('conf/conf', str(settings))
 
-    return device, model, dataloaders, optimizer, loss_func, logger
+    return device, model, dataloaders, optimizer, lr_scheduler, loss_func, logger
 
 
 def create_submission(model, dataloader, device, settings):
@@ -43,7 +44,6 @@ def create_submission(model, dataloader, device, settings):
     if submission_path:
         result_pd = pd.Series(result, name="Label")
         submission = pd.concat([pd.Series(range(1, len(result)+1), name="ImageId"), result_pd], axis=1)
-        print(len(result))
         submission.to_csv(submission_path, index=False)
 
     return result
@@ -51,8 +51,8 @@ def create_submission(model, dataloader, device, settings):
 
 def train_seed(settings):
     objects = construct_objects(settings)
-    device, model, dataloaders, optimizer, loss_func, logger = objects
-    result = model.train_model(device, dataloaders, optimizer, loss_func, logger)
+    device, model, dataloaders, optimizer, lr_scheduler, loss_func, logger = objects
+    result = model.train_model(device, dataloaders, optimizer, lr_scheduler, loss_func, logger)
     model.load(model.save_path)
     create_submission(model, dataloaders['test'], device, settings)
     if logger:
