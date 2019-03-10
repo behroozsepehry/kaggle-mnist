@@ -53,10 +53,10 @@ def get_dataloaders(**kwargs):
                                    transform=transforms.Compose(transforms_train))
     dataset_val = datasets.MNIST(path, train=True, download=True,
                                    transform=transforms.ToTensor())
-    dataset_eval_size = len(dataset_train)
-    idxs = range(dataset_eval_size)
+    dataset_train_size = len(dataset_train)
+    idxs = range(dataset_train_size)
     val_ratio = kwargs['ratio'].get('val', 0)
-    split_idx = int(np.floor(val_ratio * dataset_eval_size))
+    split_idx = int(np.floor(val_ratio * dataset_train_size))
     val_idxs = idxs[:split_idx]
     train_idxs = idxs[split_idx:]
     val_sampler = SubsetRandomSampler(val_idxs)
