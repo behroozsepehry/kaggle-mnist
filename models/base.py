@@ -54,7 +54,7 @@ class ModelBase(nn.Module):
                         100. * i_batch / len(trainer_loader),
                         loss / len(x)))
 
-        loss_epoch /= len(trainer_loader)
+        loss_epoch /= len(trainer_loader.sampler)
 
         if verbose:
             print('====> Epoch: {} Average loss: {}'.format(

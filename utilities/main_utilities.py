@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn import model_selection
+from torchvision.utils import save_image
 
 import torch
 from torch import optim
@@ -35,29 +35,36 @@ def get_optimizer(parameters, **kwargs):
 
 def get_dataloaders(**kwargs):
     path = kwargs.get('path')
-    train = pd.read_csv(path+'train.csv')
 
-    y_train = train["label"].values
-    x_train = train.drop(labels=["label"], axis=1).values
     x_test = pd.read_csv(path+'test.csv').values
-
-    del train
-
-    x_train = x_train / 255.
     x_test = x_test / 255.
-    x_train = x_train.reshape(-1, 1, 28, 28)
     x_test = x_test.reshape(-1, 1, 28, 28)
 
-    x_train, x_val, y_train, y_val = model_selection.train_test_split(x_train, y_train, test_size=kwargs['ratio']['val'])
+    transforms_train = [getattr(transforms, t['name'])(**t['args'])
+                        for t in kwargs.get('transforms', {}).get('train', [])] + [transforms.ToTensor()]
+    dataset_train = datasets.MNIST(path, train=True, download=True,
+                                   transform=transforms.Compose(transforms_train))
+    dataset_val = datasets.MNIST(path, train=True, download=True,
+                                   transform=transforms.ToTensor())
+    dataset_eval_size = len(dataset_train)
+    idxs = range(dataset_eval_size)
+    val_ratio = kwargs['ratio'].get('val', 0)
+    split_idx = int(np.floor(val_ratio * dataset_eval_size))
+    val_idxs = idxs[:split_idx]
+    train_idxs = idxs[split_idx:]
+    val_sampler = SubsetRandomSampler(val_idxs)
+    train_sampler = SubsetRandomSampler(train_idxs)
 
     dataloaders = {
         'train':
             torch.utils.data.DataLoader(
-                torch.utils.data.TensorDataset(torch.Tensor(x_train), torch.LongTensor(y_train)),
+                dataset_train,
+                sampler=train_sampler,
                 **kwargs['args']),
         'val':
             torch.utils.data.DataLoader(
-                torch.utils.data.TensorDataset(torch.Tensor(x_val), torch.LongTensor(y_val)),
+                dataset_val,
+                sampler=val_sampler,
                 **kwargs['args']),
         'test':
             torch.utils.data.DataLoader(
@@ -96,4 +103,29 @@ def get_logger(**kwargs):
     else:
         raise NotImplementedError
     return logger
+
+
+if __name__ == '__main__':
+    import argparse
+    import yaml
+    import os
+    os.chdir('..')
+    parser = argparse.ArgumentParser(description='MNIST classification')
+    parser.add_argument('--conf-path', '-c', type=str, default='confs/mnist.yaml', metavar='N',
+                        help='configuration file path')
+    args = parser.parse_args()
+    with open(args.conf_path, 'rb') as f:
+        settings = yaml.load(f)
+
+    dataloaders = get_dataloaders(**settings['Dataloaders'])
+    for x,y in dataloaders['train']:
+        save_image(x, settings['Dataloaders']['path'] + 'sample_train.png')
+        break
+    for x,y in dataloaders['val']:
+        save_image(x, settings['Dataloaders']['path'] + 'sample_val.png')
+        break
+    for x, in dataloaders['test']:
+        save_image(x, settings['Dataloaders']['path'] + 'sample_test.png')
+        break
+
 

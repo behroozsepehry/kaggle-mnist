@@ -42,7 +42,8 @@ def create_submission(model, dataloader, device, settings):
     submission_path = settings.get('submission_path')
     if submission_path:
         result_pd = pd.Series(result, name="Label")
-        submission = pd.concat([pd.Series(range(1, 28001), name="ImageId"), result_pd], axis=1)
+        submission = pd.concat([pd.Series(range(1, len(result)+1), name="ImageId"), result_pd], axis=1)
+        print(len(result))
         submission.to_csv(submission_path, index=False)
 
     return result
@@ -52,6 +53,7 @@ def train_seed(settings):
     objects = construct_objects(settings)
     device, model, dataloaders, optimizer, loss_func, logger = objects
     result = model.train_model(device, dataloaders, optimizer, loss_func, logger)
+    model.load()
     create_submission(model, dataloaders['test'], device, settings)
     if logger:
         logger.close()
