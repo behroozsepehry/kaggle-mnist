@@ -53,7 +53,7 @@ def train_seed(settings):
     objects = construct_objects(settings)
     device, model, dataloaders, optimizer, loss_func, logger = objects
     result = model.train_model(device, dataloaders, optimizer, loss_func, logger)
-    model.load()
+    model.load(model.save_path)
     create_submission(model, dataloaders['test'], device, settings)
     if logger:
         logger.close()
